@@ -1,4 +1,7 @@
+package service;
+
 import java.util.ArrayList;
+import model.Registration;
 
 public class RegistrationSystem {
 	private ArrayList<Registration> registrations;

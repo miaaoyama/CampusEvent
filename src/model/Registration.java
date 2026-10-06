@@ -1,6 +1,7 @@
 /* Registration Class: 
 Work in progress; Ideas welcome */
 
+package model;
 import java.time.LocalDateTime;												// Used to grab the exact time when called
 
 public class Registration {
