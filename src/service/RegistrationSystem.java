@@ -1,7 +1,9 @@
 /* RegistrationSystem Class: 
 Work in progress; Ideas welcome */
 
+package service;
 import java.util.ArrayList;
+import model.Registration;
 
 public class RegistrationSystem {
 
