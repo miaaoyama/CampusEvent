@@ -1,4 +1,7 @@
+package service;
+
 import java.util.ArrayList;
+import model.Event;
 
 public class EventSystem {
 
