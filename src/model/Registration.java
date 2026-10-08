@@ -11,13 +11,23 @@ public class Registration {
 	public static final String CANCELLED = "Cancelled";
 	
 	// Data field members
-	private Student student;												// Student object - not functional yet
-    private Event event;													// Event object - not functional yet
-	private LocalDateTime registrationDate;									// Registration date and time for the event
+	private final Student student;											// Student object
+    private final Event event;												// Event object
+	private final LocalDateTime registrationDate;							// Registration date and time for the event
 	private String registrationStatus;										// Shows if a student is currently registered for the chosen event
 
     // Constructor
 	public Registration(Student student, Event event) {
+
+		// Exception check for if a student object exists
+		if (student == null) {
+			throw new IllegalArgumentException("Error: Student can't be null.");
+		}
+		
+		// Exception check for if an event object exists
+		if (event == null) {
+			throw new IllegalArgumentException("Error: Event can't be null.");
+		}
 		this.student = student;
 		this.event = event;													
 		this.registrationDate = LocalDateTime.now();						// Sets the registration date to the current day and time (not currently formatted)
@@ -43,12 +53,20 @@ public class Registration {
 		return registrationStatus;
 	}
 
-	// Method: Cancels registration for the current student and event
-	// Note that this does not remove the student from a list-- it only
-	// acknowledges the student has cancelled.
-	public void cancelRegistration() {
+	// Method: Marks a student registration as cancelled
+	public boolean cancelRegistration() {
+		// If already cancelled, returns false.
+		if (CANCELLED.equals(registrationStatus)) {
+			return false;
+		}
 		registrationStatus = CANCELLED;
+		return true;
 	}
 
-	
-}
+	// Method: prints relevant Registration info
+	@Override
+	public String toString() {
+		return "Student: " + student.getName() + ", Event: " + event.getName()
+				+ ", Registration date: " + registrationDate + ", Status: " + registrationStatus;
+	}
+}	// end class
