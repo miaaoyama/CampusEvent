@@ -12,10 +12,12 @@ public class EventSystem {
     }
 
     // Add an event
-    public void addEvent(Event event) {
+    public boolean addEvent(Event event) {
         if (event != null) {
             events.add(event);
+            return true;
         }
+        return false;
     }
 
     // Find an event by its ID
