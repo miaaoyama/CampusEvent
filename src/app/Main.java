@@ -454,9 +454,42 @@ public class Main {
 
                 // 7. Cancel Registration
                 case 7: {
-                    System.out.println("WIP - Cancel Registration selected\n");
+                    System.out.println("Cancel Registration selected\n");
+
+                    int studentId;
+                    while (true) {
+                        System.out.print("Enter student ID: ");
+                        if (input.hasNextInt()) {
+                            studentId = input.nextInt();
+                            break;
+                        }
+                        System.out.println("Invalid input. Enter a whole-number ID.");
+                        input.next();
+                    }
+
+                    int eventId;
+                    while (true) {
+                        System.out.print("Enter event ID: ");
+                        if (input.hasNextInt()) {
+                            eventId = input.nextInt();
+                            break;
+                        }
+                        System.out.println("Invalid input. Enter a whole-number ID.");
+                        input.next(); 
+                    }
+
+                    Registration cancelled = registrationSystem.cancelRegistration(studentId, eventId);
+
+                    if (cancelled != null) {
+                        System.out.println("Registration cancelled for "
+                                + cancelled.getStudent().getName() + " with the "
+                                + cancelled.getEvent().getName() + ".\n");
+                    } else {
+                        System.out.println("No active registration found for that student and event.\n");
+                    }
                     break;
                 }
+
 
                 // 8. View Student Registrations
                 case 8: {
@@ -564,5 +597,11 @@ public class Main {
         } while (menuSelect != 0);
 
         System.out.println("Exiting program.");
+
+        input.close();
     }
-}
+} 
+
+
+// MAIN HELPER METHODS
+

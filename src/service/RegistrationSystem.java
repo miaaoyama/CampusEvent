@@ -148,4 +148,22 @@ public class RegistrationSystem {
 		}
 	}
 
+	// Method - Cancel Registration
+	// Takes student ID and event ID as input
+	public Registration cancelRegistration(int studentId, int eventId) {
+    for (Registration registration : registrations) {
+        if (registration.getStudent().getStudentId() == studentId
+                && registration.getEvent().getEventId() == eventId
+                && Registration.REGISTERED.equals(
+                        registration.getRegistrationStatus())) {
+
+            registration.cancelRegistration();
+            return registration;
+        }
+    }
+
+    return null; // No active matching registration
+}
+
+
 }
