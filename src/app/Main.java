@@ -456,27 +456,9 @@ public class Main {
                 case 7: {
                     System.out.println("Cancel Registration selected\n");
 
-                    int studentId;
-                    while (true) {
-                        System.out.print("Enter student ID: ");
-                        if (input.hasNextInt()) {
-                            studentId = input.nextInt();
-                            break;
-                        }
-                        System.out.println("Invalid input. Enter a whole-number ID.");
-                        input.next();
-                    }
-
-                    int eventId;
-                    while (true) {
-                        System.out.print("Enter event ID: ");
-                        if (input.hasNextInt()) {
-                            eventId = input.nextInt();
-                            break;
-                        }
-                        System.out.println("Invalid input. Enter a whole-number ID.");
-                        input.next(); 
-                    }
+                    // User input checks (using helper function readInt() at the bottom of main)
+                    int studentId = readInt(input, "Enter student ID: ", "Invalid input. Enter a whole-number ID. ");
+                    int eventId =   readInt(input, "Enter event ID: ",   "Invalid input. Enter a whole-number ID." );
 
                     Registration cancelled = registrationSystem.cancelRegistration(studentId, eventId);
 
@@ -600,8 +582,26 @@ public class Main {
 
         input.close();
     }
+
+
+    // MAIN HELPER METHODS
+
+    // readInt - verifies and returns an int input. Also allows a custom prompt and an error message
+    private static int readInt(Scanner input, String prompt, String errorMessage) {
+        System.out.print(prompt);
+        // loops until a proper int input is entered
+        while (!input.hasNextInt()) {
+            System.out.println(errorMessage);
+            // discards an invalid input
+            input.next(); 
+            System.out.print(prompt);
+        }
+        return input.nextInt();
+    }
+
+
 } 
 
 
-// MAIN HELPER METHODS
+
 
