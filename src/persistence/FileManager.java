@@ -57,8 +57,7 @@ public class FileManager {
                 String[] data = line.split(",", -1);
 
                 if (data.length != 4) {
-                    System.out.println("Skipping invalid student record.");
-                    continue;
+                    throw new IllegalArgumentException("Invalid student record in " + filename);
                 }
 
                 try {
@@ -74,14 +73,14 @@ public class FileManager {
                     students.add(student);
 
                 } catch (NumberFormatException e) {
-                    System.out.println("Skipping student with invalid ID.");
+                    throw new IllegalArgumentException("Invalid student ID in " + filename, e);
                 }
             }
 
             System.out.println("Students loaded successfully.");
 
         } catch (IOException e) {
-            System.out.println("Error loading students: " + e.getMessage());
+            throw new IllegalStateException("Error loading students: " + filename, e);
         }
 
         return students;
@@ -158,8 +157,7 @@ public class FileManager {
 
                 // Each event should have 9 fields
                 if (data.length != 9) {
-                    System.out.println("Skipping invalid event record.");
-                    continue;
+                    throw new IllegalArgumentException("Invalid event record in " + filename);
                 }
 
                 try {
@@ -207,22 +205,21 @@ public class FileManager {
                             break;
 
                         default:
-                            System.out.println("Unknown event type: " + eventType);
-                            continue;
+                            throw new IllegalArgumentException("Unknown event type: " + eventType);
                     }
 
                     // Add the event to the list
                     events.add(event);
 
                 } catch (IllegalArgumentException e) {
-                    System.out.println("Skipping invalid event: " + e.getMessage());
+                    throw new IllegalArgumentException("Invalid event in " + filename, e);
                 }
             }
 
             System.out.println("Events loaded successfully.");
 
         } catch (IOException e) {
-            System.out.println("Error loading events: " + e.getMessage());
+            throw new IllegalStateException("Error loading events: " + filename, e);
         }
 
         return events;
@@ -277,8 +274,7 @@ public class FileManager {
 
                 // Each registration must have 4 fields
                 if (data.length != 4) {
-                    System.out.println("Skipping invalid registration record.");
-                    continue;
+                    throw new IllegalArgumentException("Invalid registration record in " + filename);
                 }
 
                 try {
@@ -308,9 +304,7 @@ public class FileManager {
 
                     // Skip registrations with missing students or events
                     if (foundStudent == null || foundEvent == null) {
-                        System.out.println(
-                            "Skipping registration: student or event not found.");
-                        continue;
+                        throw new IllegalArgumentException("Registration references a missing student or event in " + filename);
                     }
 
                     // Restore the original date and status
@@ -321,14 +315,14 @@ public class FileManager {
                     registrations.add(registration);
 
                 } catch (IllegalArgumentException e) {
-                    System.out.println("Skipping invalid registration: " + e.getMessage());
+                    throw new IllegalArgumentException("Invalid registration in " + filename, e);
                 }
             }
 
             System.out.println("Registrations loaded successfully.");
 
         } catch (IOException e) {
-            System.out.println("Error loading registrations: " + e.getMessage());
+            throw new IllegalStateException("Error loading registrations: " + filename, e);
         }
 
         return registrations;

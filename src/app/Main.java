@@ -14,6 +14,10 @@ import model.Registration;
 import service.StudentManager;
 import service.EventSystem;
 import service.RegistrationSystem;
+import persistence.FileManager;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 public class Main {
     public static void main(String[] args) {
@@ -24,19 +28,83 @@ public class Main {
         EventSystem eventSystem = new EventSystem();
         RegistrationSystem registrationSystem = new RegistrationSystem();
 
+        // File manager for saving and loading data
+        FileManager fileManager = new FileManager();
+
+
+        // Check existing data files before loading
+        String[] dataFiles = {
+            "students.csv",
+            "events.csv",
+            "registrations.csv"
+        };
+
+        for (String filename : dataFiles) {
+            Path path = Path.of(filename);
+
+            if (Files.exists(path) && (!Files.isRegularFile(path) || !Files.isReadable(path))) {
+
+                System.out.println("Cannot safely read " + filename + ". Exiting without saving.");
+
+                input.close();
+                return;
+            }
+        }
+
+
+
+        // Load saved data when the program starts
+        try {
+
+            if (Files.notExists(Path.of("students.csv"))) {
+                System.out.println("No saved students found. Starting empty.");
+            } else {
+                for (Student student : fileManager.loadStudents("students.csv")) {
+                    studentManager.addStudent(student);
+                }
+            }
+
+            if (Files.notExists(Path.of("events.csv"))) {
+                System.out.println("No saved events found. Starting empty.");
+            } else {
+                for (Event event : fileManager.loadEvents("events.csv")) {
+                    eventSystem.addEvent(event);
+                }
+            }
+
+            // Load registrations
+            if (Files.notExists(Path.of("registrations.csv"))) {
+                System.out.println("No saved registrations found. Starting empty.");
+            } else {
+                for (Registration registration : fileManager.loadRegistrations("registrations.csv", studentManager.getAllStudents(), eventSystem.getAllEvents())) {
+
+                    registrationSystem.restoreRegistration(registration);
+                }
+            }
+
+        } catch (IllegalArgumentException | IllegalStateException e) {
+
+            System.out.println("Error loading saved data: " + e.getMessage());
+            System.out.println("Program stopped to prevent overwriting saved data.");
+
+            input.close();
+            return;
+        }
+
+
         int menuSelect = 1;
 
         // **TEMPORARY TEST DATA**
-        Student testStudent1 = new Student(1001, "Test Student1", "test1@example.com", "Computer Science");
-        Student testStudent2 = new Student(1002, "Test Student2", "test2@example.com", "Computer Science");
-        Student testStudent3 = new Student(1003, "Test Student3", "test3@example.com", "Computer Science");
-        Event testEvent1 = new AcademicEvent(2001, "Test Workshop", "A test academic event", LocalDate.of(2026, 10, 10), LocalTime.of(10, 0), "Room 101", 2, "Academics");
-        Event testEvent2 = new ClubEvent(2002, "Test Hangout", "A test club event", LocalDate.of(2026, 11, 14), LocalTime.of(14, 30), "Room 201", 1, "Stuff");
-        studentManager.addStudent(testStudent1);
-        studentManager.addStudent(testStudent2);
-        studentManager.addStudent(testStudent3);
-        eventSystem.addEvent(testEvent1);
-        eventSystem.addEvent(testEvent2);
+        // Student testStudent1 = new Student(1001, "Test Student1", "test1@example.com", "Computer Science");
+        // Student testStudent2 = new Student(1002, "Test Student2", "test2@example.com", "Computer Science");
+        // Student testStudent3 = new Student(1003, "Test Student3", "test3@example.com", "Computer Science");
+        // Event testEvent1 = new AcademicEvent(2001, "Test Workshop", "A test academic event", LocalDate.of(2026, 10, 10), LocalTime.of(10, 0), "Room 101", 2, "Academics");
+        // Event testEvent2 = new ClubEvent(2002, "Test Hangout", "A test club event", LocalDate.of(2026, 11, 14), LocalTime.of(14, 30), "Room 201", 1, "Stuff");
+        // studentManager.addStudent(testStudent1);
+        // studentManager.addStudent(testStudent2);
+        // studentManager.addStudent(testStudent3);
+        // eventSystem.addEvent(testEvent1);
+        // eventSystem.addEvent(testEvent2);
         // **TEMPORARY TEST DATA**
 
         // Begin a loop to return to menu after each selection (until the selection is 0)
@@ -577,6 +645,13 @@ public class Main {
             }
 
         } while (menuSelect != 0);
+
+        // Save students, events, and registrations before exiting
+        fileManager.saveStudents(studentManager.getAllStudents(), "students.csv");
+
+        fileManager.saveEvents(eventSystem.getAllEvents(), "events.csv");
+
+        fileManager.saveRegistrations(registrationSystem.getAllRegistrations(),"registrations.csv");
 
         System.out.println("Exiting program.");
 
