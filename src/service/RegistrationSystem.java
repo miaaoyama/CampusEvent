@@ -135,7 +135,7 @@ public class RegistrationSystem {
 		for (Registration registration : registrations) {
 			if (registration.getEvent().getEventId() == event.getEventId()
 				&& Registration.REGISTERED.equals(registration.getRegistrationStatus())) {
-					Student student = registration.getStudent();
+					// Student student = registration.getStudent();
 					// Print in the format: #. Student name
 					System.out.println(studentNumber + ". " + registration.getStudent().getName());
 					studentNumber++;

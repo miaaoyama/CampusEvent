@@ -457,14 +457,14 @@ public class Main {
                     System.out.println("Cancel Registration selected\n");
 
                     // User input checks (using helper function readInt() at the bottom of main)
-                    int studentId = readInt(input, "Enter student ID: ", "Invalid input. Enter a whole-number ID. ");
-                    int eventId =   readInt(input, "Enter event ID: ",   "Invalid input. Enter a whole-number ID." );
+                    int studentId = readInt(input, "Enter 4-digit student ID: ", 1000, 9999);
+                    int eventId =   readInt(input, "Enter 4-digit event ID: ", 1000, 9999 );
 
                     Registration cancelled = registrationSystem.cancelRegistration(studentId, eventId);
 
                     if (cancelled != null) {
                         System.out.println("Registration cancelled for "
-                                + cancelled.getStudent().getName() + " with the "
+                                + cancelled.getStudent().getName() + " --> "
                                 + cancelled.getEvent().getName() + ".\n");
                     } else {
                         System.out.println("No active registration found for that student and event.\n");
@@ -586,18 +586,29 @@ public class Main {
 
     // MAIN HELPER METHODS
 
-    // readInt - verifies and returns an int input. Also allows a custom prompt and an error message
-    private static int readInt(Scanner input, String prompt, String errorMessage) {
+    // readInt - verifies and returns an int input. Also allows a custom prompt, min range, and max range
+    private static int readInt(
+        Scanner input, String prompt, int min, int max) {
+
+    while (true) {
         System.out.print(prompt);
-        // loops until a proper int input is entered
-        while (!input.hasNextInt()) {
-            System.out.println(errorMessage);
-            // discards an invalid input
+
+        if (!input.hasNextInt()) {
+            System.out.println("Please enter a valid integer value.");
             input.next(); 
-            System.out.print(prompt);
+            continue;
         }
-        return input.nextInt();
+
+        int value = input.nextInt();
+
+        if (value >= min && value <= max) {
+            input.nextLine(); 
+            return value;
+        }
+
+        System.out.println("Enter a number from " + min + " to " + max + ".");
     }
+}
 
 
 } 
