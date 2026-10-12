@@ -18,6 +18,7 @@ import model.SocialEvent;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
+import java.time.LocalDateTime;
 import model.Registration;
 
 public class FileManager {
@@ -28,10 +29,7 @@ public class FileManager {
         try (FileWriter writer = new FileWriter(filename)) {
 
             for (Student student : students) {
-                writer.write(student.getStudentId() + ","
-                        + student.getName() + ","
-                        + student.getEmail() + ","
-                        + student.getMajor() + "\n");
+                writer.write(student.getStudentId() + "," + student.getName() + "," + student.getEmail() + "," + student.getMajor() + "\n");
             }
 
             System.out.println("Students saved successfully.");
@@ -260,5 +258,80 @@ public class FileManager {
     }
 
 
+    // Load registrations from a text file
+    public ArrayList<Registration> loadRegistrations(
+            String filename,
+            ArrayList<Student> students,
+            ArrayList<Event> events) {
+
+        ArrayList<Registration> registrations = new ArrayList<>();
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
+
+            String line;
+
+            // Read each registration from the file
+            while ((line = reader.readLine()) != null) {
+
+                String[] data = line.split(",", -1);
+
+                // Each registration must have 4 fields
+                if (data.length != 4) {
+                    System.out.println("Skipping invalid registration record.");
+                    continue;
+                }
+
+                try {
+                    int studentId = Integer.parseInt(data[0]);
+                    int eventId = Integer.parseInt(data[1]);
+                    LocalDateTime date = LocalDateTime.parse(data[2]);
+                    String status = data[3];
+
+                    Student foundStudent = null;
+                    Event foundEvent = null;
+
+                    // Find the student by ID
+                    for (Student student : students) {
+                        if (student.getStudentId() == studentId) {
+                            foundStudent = student;
+                            break;
+                        }
+                    }
+
+                    // Find the event by ID
+                    for (Event event : events) {
+                        if (event.getEventId() == eventId) {
+                            foundEvent = event;
+                            break;
+                        }
+                    }
+
+                    // Skip registrations with missing students or events
+                    if (foundStudent == null || foundEvent == null) {
+                        System.out.println(
+                            "Skipping registration: student or event not found.");
+                        continue;
+                    }
+
+                    // Restore the original date and status
+                    Registration registration = new Registration(
+                        foundStudent, foundEvent, date, status
+                    );
+
+                    registrations.add(registration);
+
+                } catch (IllegalArgumentException e) {
+                    System.out.println("Skipping invalid registration: " + e.getMessage());
+                }
+            }
+
+            System.out.println("Registrations loaded successfully.");
+
+        } catch (IOException e) {
+            System.out.println("Error loading registrations: " + e.getMessage());
+        }
+
+        return registrations;
+    }
 
 }

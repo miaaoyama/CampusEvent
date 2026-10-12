@@ -129,5 +129,45 @@ public class FileManagerTest {
         fileManager.saveRegistrations(registrations, "registrations.txt");
 
 
+        // Load registrations from the saved file
+        ArrayList<Registration> loadedRegistrations =
+                fileManager.loadRegistrations("registrations.txt", loadedStudents, loadedEvents
+                );
+
+        // Display the loaded registrations
+        System.out.println("\nLoaded Registrations:");
+
+        for (Registration registration : loadedRegistrations) {
+            System.out.println(registration);
+        }
+
+
+        // Check that both registrations were loaded
+        if (loadedRegistrations.size() != 2) {
+            throw new AssertionError("Expected 2 registrations.");
+        }
+
+        // Check that the original dates were preserved
+        if (!registration1.getRegistrationDate().equals(
+                loadedRegistrations.get(0).getRegistrationDate())) {
+            throw new AssertionError("First registration date changed.");
+        }
+
+        if (!registration2.getRegistrationDate().equals(loadedRegistrations.get(1).getRegistrationDate())) {
+            throw new AssertionError("Second registration date changed.");
+        }
+
+        // Check that the original statuses were preserved
+        if (!registration1.getRegistrationStatus().equals(loadedRegistrations.get(0).getRegistrationStatus())) {
+            throw new AssertionError("First registration status changed.");
+        }
+
+        if (!registration2.getRegistrationStatus().equals(loadedRegistrations.get(1).getRegistrationStatus())) {
+            throw new AssertionError("Second registration status changed.");
+        }
+
+        System.out.println("\nAll registration restoration checks passed!");
+
+
     }
 }
