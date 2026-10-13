@@ -435,7 +435,45 @@ public class Main {
 
                 // 5. Search Events
                 case 5: {
-                    System.out.println("WIP - Search Events selected\n");
+
+                    System.out.println("\n=== Search Events ===");
+                    System.out.println("1. Academic Events");
+                    System.out.println("2. Club Events");
+                    System.out.println("3. Social Events");
+                    System.out.println("4. Career Events");
+                    System.out.println("0. Return to Main Menu");
+
+                    int searchChoice = readInt(
+                            input, "Select event type: ", 0, 4);
+
+                    if (searchChoice == 0) {
+                        break;
+                    }
+
+                    String[] types = {
+                        "academic", "club", "social", "career"
+                    };
+
+                    String selectedType = types[searchChoice - 1];
+
+                    java.util.ArrayList<model.Event> matches =
+                            eventSystem.searchEventsByType(selectedType);
+
+                    if (matches.isEmpty()) {
+                        System.out.println(
+                            "No " + selectedType + " events found."
+                        );
+                    } else {
+                        System.out.println(
+                            "\nMatching " + selectedType + " events:"
+                        );
+
+                        for (model.Event event : matches) {
+                            event.displayDetails();
+                            System.out.println("--------------------");
+                        }
+                    }
+
                     break;
                 }
 
