@@ -57,4 +57,36 @@ public class EventSystem {
             System.out.println("--------------------");
         }
     }
+
+    // Find events by category.
+    public ArrayList<Event> searchEventsByType(String type) {
+        ArrayList<Event> matches = new ArrayList<>();
+
+        for (Event event : events) {
+            boolean isMatch = false;
+
+            switch (type.toLowerCase()) {
+                case "academic":
+                    isMatch = event instanceof model.AcademicEvent;
+                    break;
+                case "club":
+                    isMatch = event instanceof model.ClubEvent;
+                    break;
+                case "social":
+                    isMatch = event instanceof model.SocialEvent;
+                    break;
+                case "career":
+                    isMatch = event instanceof model.CareerEvent;
+                    break;
+                default:
+                    return matches;
+            }
+
+            if (isMatch) {
+                matches.add(event);
+            }
+        }
+
+        return matches;
+    }
 }
