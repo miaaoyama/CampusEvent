@@ -14,6 +14,7 @@ import model.Registration;
 import service.StudentManager;
 import service.EventSystem;
 import service.RegistrationSystem;
+import service.OrganizerManager;
 import service.ReportSystem;
 import persistence.FileManager;
 
@@ -28,6 +29,7 @@ public class Main {
         StudentManager studentManager = new StudentManager();
         EventSystem eventSystem = new EventSystem();
         RegistrationSystem registrationSystem = new RegistrationSystem();
+        OrganizerManager organizerManager = new OrganizerManager();
 
         // File manager for saving and loading data
         FileManager fileManager = new FileManager();
@@ -37,7 +39,8 @@ public class Main {
         String[] dataFiles = {
             "students.csv",
             "events.csv",
-            "registrations.csv"
+            "registrations.csv",
+            "organizers.csv"
         };
 
         for (String filename : dataFiles) {
@@ -80,6 +83,20 @@ public class Main {
                 for (Registration registration : fileManager.loadRegistrations("registrations.csv", studentManager.getAllStudents(), eventSystem.getAllEvents())) {
 
                     registrationSystem.restoreRegistration(registration);
+                }
+            }
+
+            // Load saved organizers and their event assignments.
+            if (Files.notExists(Path.of("organizers.csv"))) {
+                System.out.println("No saved organizers found. Starting empty.");
+            } else {
+                for (model.Organizer organizer :
+                        fileManager.loadOrganizers("organizers.csv")) {
+                    if (!organizerManager.addOrganizer(organizer)) {
+                        throw new IllegalArgumentException(
+                                "Duplicate organizer ID: "
+                                + organizer.getOrganizerId());
+                    }
                 }
             }
 
@@ -672,7 +689,9 @@ public class Main {
 
                 // 10. View Organizers
                 case 10: {
-                    System.out.println("WIP - View Organizers selected\n");
+                    System.out.println("=== View Organizers ===");
+                    organizerManager.displayAllOrganizers(eventSystem);
+                    System.out.println();
                     break;
                 }
 
@@ -727,6 +746,9 @@ public class Main {
         fileManager.saveEvents(eventSystem.getAllEvents(), "events.csv");
 
         fileManager.saveRegistrations(registrationSystem.getAllRegistrations(),"registrations.csv");
+
+        fileManager.saveOrganizers(
+                organizerManager.getAllOrganizers(), "organizers.csv");
 
         System.out.println("Exiting program.");
 
