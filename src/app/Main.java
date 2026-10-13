@@ -28,84 +28,76 @@ public class Main {
         EventSystem eventSystem = new EventSystem();
         RegistrationSystem registrationSystem = new RegistrationSystem();
 
-        // File manager for saving and loading data
+        // Initialize file management object for saving and loading data
         FileManager fileManager = new FileManager();
 
-
-        // Check existing data files before loading
+        // Initialize an array of the three data file names, in the data folder
         String[] dataFiles = {
-            "students.csv",
-            "events.csv",
-            "registrations.csv"
+            "data/students.csv",
+            "data/events.csv",
+            "data/registrations.csv"
         };
 
+
+        // Begin a loop for each file, to check if each one exists
         for (String filename : dataFiles) {
+            // Initialize a path representing the file location
             Path path = Path.of(filename);
 
+            // If the file exists, but isnt a regular file or cant be read, exit the program immediately
             if (Files.exists(path) && (!Files.isRegularFile(path) || !Files.isReadable(path))) {
 
                 System.out.println("Cannot safely read " + filename + ". Exiting without saving.");
 
-                input.close();
-                return;
+                input.close();  // Close the Scanner object
+                return; // Exit the program
             }
         }
 
-
-
-        // Load saved data when the program starts
+        // Try to load the saved data of each file
         try {
 
-            if (Files.notExists(Path.of("students.csv"))) {
+            // If students.csv does not exist, start with empty list
+            if (Files.notExists(Path.of("data/students.csv"))) {
                 System.out.println("No saved students found. Starting empty.");
-            } else {
-                for (Student student : fileManager.loadStudents("students.csv")) {
+            } else {    // Else, file exists, so load the data from students.csv into the students array
+                for (Student student : fileManager.loadStudents("data/students.csv")) {
                     studentManager.addStudent(student);
                 }
             }
 
-            if (Files.notExists(Path.of("events.csv"))) {
+            // If events.csv does not exist, start with empty list
+            if (Files.notExists(Path.of("data/events.csv"))) {
                 System.out.println("No saved events found. Starting empty.");
-            } else {
-                for (Event event : fileManager.loadEvents("events.csv")) {
+            } else {    // Else, file exists, so load the data from events.csv into the events array
+                for (Event event : fileManager.loadEvents("data/events.csv")) {
                     eventSystem.addEvent(event);
                 }
             }
 
-            // Load registrations
-            if (Files.notExists(Path.of("registrations.csv"))) {
+            // If registrations.csv does not exist, start with empty list
+            if (Files.notExists(Path.of("data/registrations.csv"))) {
                 System.out.println("No saved registrations found. Starting empty.");
-            } else {
-                for (Registration registration : fileManager.loadRegistrations("registrations.csv", studentManager.getAllStudents(), eventSystem.getAllEvents())) {
-
+            } else {    // Else, file exists, so load the data from registrations.csv into the registrations array
+                for (Registration registration : fileManager.loadRegistrations("data/registrations.csv", studentManager.getAllStudents(), eventSystem.getAllEvents())) {
                     registrationSystem.restoreRegistration(registration);
                 }
             }
+            System.out.println();   // Print newline for spacing
 
+        // If an exception occurs while trying to load the files, handle it and exit the program immediately
         } catch (IllegalArgumentException | IllegalStateException e) {
 
             System.out.println("Error loading saved data: " + e.getMessage());
             System.out.println("Program stopped to prevent overwriting saved data.");
 
-            input.close();
-            return;
+            input.close();  // Close the Scanner object
+            return; // Exit the program
         }
 
 
+        // Initialize an int to hold the user's menu selections
         int menuSelect = 1;
-
-        // **TEMPORARY TEST DATA**
-        // Student testStudent1 = new Student(1001, "Test Student1", "test1@example.com", "Computer Science");
-        // Student testStudent2 = new Student(1002, "Test Student2", "test2@example.com", "Computer Science");
-        // Student testStudent3 = new Student(1003, "Test Student3", "test3@example.com", "Computer Science");
-        // Event testEvent1 = new AcademicEvent(2001, "Test Workshop", "A test academic event", LocalDate.of(2026, 10, 10), LocalTime.of(10, 0), "Room 101", 2, "Academics");
-        // Event testEvent2 = new ClubEvent(2002, "Test Hangout", "A test club event", LocalDate.of(2026, 11, 14), LocalTime.of(14, 30), "Room 201", 1, "Stuff");
-        // studentManager.addStudent(testStudent1);
-        // studentManager.addStudent(testStudent2);
-        // studentManager.addStudent(testStudent3);
-        // eventSystem.addEvent(testEvent1);
-        // eventSystem.addEvent(testEvent2);
-        // **TEMPORARY TEST DATA**
 
         // Begin a loop to return to menu after each selection (until the selection is 0)
         do {
@@ -644,18 +636,22 @@ public class Main {
                 }
             }
 
+        // When the uder enters 0, the menu loop is exited.
         } while (menuSelect != 0);
 
-        // Save students, events, and registrations before exiting
-        fileManager.saveStudents(studentManager.getAllStudents(), "students.csv");
+        System.out.println();   // Print newline for spacing
 
-        fileManager.saveEvents(eventSystem.getAllEvents(), "events.csv");
+        // Save the contents of the students, events, and registrations
+        // arrays in their respective files before exiting the program.
+        fileManager.saveStudents(studentManager.getAllStudents(), "data/students.csv");
 
-        fileManager.saveRegistrations(registrationSystem.getAllRegistrations(),"registrations.csv");
+        fileManager.saveEvents(eventSystem.getAllEvents(), "data/events.csv");
+
+        fileManager.saveRegistrations(registrationSystem.getAllRegistrations(),"data/registrations.csv");
 
         System.out.println("Exiting program.");
 
-        input.close();
+        input.close();  // Close the Scanner object
     }
 
 

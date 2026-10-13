@@ -52,6 +52,11 @@ public class EventSystem {
 
     // Display every event
     public void displayAllEvents() {
+        if (events.isEmpty()) {
+			System.out.println("No events found.");
+			return;
+		}
+
         for (Event event : events) {
             event.displayDetails();
             System.out.println("--------------------");
