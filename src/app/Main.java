@@ -14,6 +14,8 @@ import model.Registration;
 import service.StudentManager;
 import service.EventSystem;
 import service.RegistrationSystem;
+import service.OrganizerManager;
+import service.ReportSystem;
 import persistence.FileManager;
 
 import java.nio.file.Files;
@@ -27,6 +29,7 @@ public class Main {
         StudentManager studentManager = new StudentManager();
         EventSystem eventSystem = new EventSystem();
         RegistrationSystem registrationSystem = new RegistrationSystem();
+        OrganizerManager organizerManager = new OrganizerManager();
 
         // Initialize file management object for saving and loading data
         FileManager fileManager = new FileManager();
@@ -35,7 +38,8 @@ public class Main {
         String[] dataFiles = {
             "data/students.csv",
             "data/events.csv",
-            "data/registrations.csv"
+            "data/registrations.csv",
+            "data/organizers.csv"
         };
 
 
@@ -83,9 +87,23 @@ public class Main {
                     registrationSystem.restoreRegistration(registration);
                 }
             }
-            System.out.println();   // Print newline for spacing
 
-        // If an exception occurs while trying to load the files, handle it and exit the program immediately
+            // Load saved organizers and their event assignments.
+            if (Files.notExists(Path.of("data/organizers.csv"))) {
+                System.out.println("No saved organizers found. Starting empty.");
+            } else {
+                for (model.Organizer organizer :
+                        fileManager.loadOrganizers("data/organizers.csv")) {
+                    if (!organizerManager.addOrganizer(organizer)) {
+                        throw new IllegalArgumentException(
+                                "Duplicate organizer ID: "
+                                + organizer.getOrganizerId());
+                    }
+                }
+            }
+          
+          System.out.println();   // Print newline for spacing
+
         } catch (IllegalArgumentException | IllegalStateException e) {
 
             System.out.println("Error loading saved data: " + e.getMessage());
@@ -427,7 +445,45 @@ public class Main {
 
                 // 5. Search Events
                 case 5: {
-                    System.out.println("WIP - Search Events selected\n");
+
+                    System.out.println("\n=== Search Events ===");
+                    System.out.println("1. Academic Events");
+                    System.out.println("2. Club Events");
+                    System.out.println("3. Social Events");
+                    System.out.println("4. Career Events");
+                    System.out.println("0. Return to Main Menu");
+
+                    int searchChoice = readInt(
+                            input, "Select event type: ", 0, 4);
+
+                    if (searchChoice == 0) {
+                        break;
+                    }
+
+                    String[] types = {
+                        "academic", "club", "social", "career"
+                    };
+
+                    String selectedType = types[searchChoice - 1];
+
+                    java.util.ArrayList<model.Event> matches =
+                            eventSystem.searchEventsByType(selectedType);
+
+                    if (matches.isEmpty()) {
+                        System.out.println(
+                            "No " + selectedType + " events found."
+                        );
+                    } else {
+                        System.out.println(
+                            "\nMatching " + selectedType + " events:"
+                        );
+
+                        for (model.Event event : matches) {
+                            event.displayDetails();
+                            System.out.println("--------------------");
+                        }
+                    }
+
                     break;
                 }
 
@@ -625,13 +681,51 @@ public class Main {
 
                 // 10. View Organizers
                 case 10: {
-                    System.out.println("WIP - View Organizers selected\n");
+                    System.out.println("=== View Organizers ===");
+                    organizerManager.displayAllOrganizers(eventSystem);
+                    System.out.println();
                     break;
                 }
 
                 // 11. System Reports
                 case 11: {
-                    System.out.println("WIP - System Reports selected\n");
+                    ReportSystem reports = new ReportSystem(
+                            eventSystem, registrationSystem);
+
+                    int reportChoice;
+
+                    do {
+                        System.out.println("\n=== System Reports ===");
+                        System.out.println("1. Events with Available Capacity");
+                        System.out.println("2. Full Events");
+                        System.out.println("3. Most Popular Events");
+                        System.out.println("4. Students Registered for Multiple Events");
+                        System.out.println("0. Return to Main Menu");
+
+                        reportChoice = readInt(input, "Select a report: ", 0, 4);
+
+                        switch (reportChoice) {
+                            case 1:
+                                reports.displayAvailableEvents();
+                                break;
+                            case 2:
+                                reports.displayFullEvents();
+                                break;
+                            case 3:
+                                reports.displayPopularEvents();
+                                break;
+                            case 4:
+                                reports.displayStudentsWithMultipleEvents();
+                                break;
+                            case 0:
+                                System.out.println("Returning to main menu.");
+                                break;
+                            default:
+                                System.out.println("Invalid report option.");
+                        }
+
+                    } while (reportChoice != 0);
+
                     break;
                 }
             }
@@ -648,6 +742,9 @@ public class Main {
         fileManager.saveEvents(eventSystem.getAllEvents(), "data/events.csv");
 
         fileManager.saveRegistrations(registrationSystem.getAllRegistrations(),"data/registrations.csv");
+
+        fileManager.saveOrganizers(
+                organizerManager.getAllOrganizers(), "organizers.csv");
 
         System.out.println("Exiting program.");
 
