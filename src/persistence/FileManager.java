@@ -328,4 +328,106 @@ public class FileManager {
         return registrations;
     }
 
+
+    // Save organizers and their event assignments.
+    public void saveOrganizers(
+            java.util.ArrayList<model.Organizer> organizers,
+            String filename) {
+
+        try (java.io.FileWriter writer =
+                new java.io.FileWriter(filename)) {
+
+            for (model.Organizer organizer : organizers) {
+                java.util.ArrayList<Integer> eventIds =
+                        organizer.getEventIds();
+
+                // An organizer with no events still gets saved.
+                if (eventIds.isEmpty()) {
+                    writer.write(organizer.getOrganizerId() + ","
+                            + organizer.getName() + ","
+                            + organizer.getEmail() + ",\n");
+                } else {
+                    for (int eventId : eventIds) {
+                        writer.write(organizer.getOrganizerId() + ","
+                                + organizer.getName() + ","
+                                + organizer.getEmail() + ","
+                                + eventId + "\n");
+                    }
+                }
+            }
+
+            System.out.println("Organizers saved successfully.");
+
+        } catch (java.io.IOException e) {
+            throw new IllegalStateException(
+                    "Error saving organizers: " + filename, e);
+        }
+    }
+
+    // Load organizers and their event assignments.
+    public java.util.ArrayList<model.Organizer> loadOrganizers(
+            String filename) {
+
+        java.util.LinkedHashMap<Integer, model.Organizer> organizers =
+                new java.util.LinkedHashMap<>();
+
+        try (java.io.BufferedReader reader =
+                new java.io.BufferedReader(
+                        new java.io.FileReader(filename))) {
+
+            String line;
+
+            while ((line = reader.readLine()) != null) {
+                if (line.isBlank()) {
+                    continue;
+                }
+
+                String[] data = line.split(",", -1);
+
+                if (data.length != 4) {
+                    throw new IllegalArgumentException(
+                            "Invalid organizer record in " + filename);
+                }
+
+                try {
+                    int organizerId = Integer.parseInt(data[0]);
+                    String name = data[1];
+                    String email = data[2];
+
+                    model.Organizer organizer =
+                            organizers.get(organizerId);
+
+                    if (organizer == null) {
+                        organizer = new model.Organizer(
+                                organizerId, name, email);
+                        organizers.put(organizerId, organizer);
+                    } else if (!organizer.getName().equals(name)
+                            || !organizer.getEmail().equals(email)) {
+                        throw new IllegalArgumentException(
+                                "Conflicting organizer details for ID "
+                                        + organizerId);
+                    }
+
+                    if (!data[3].isEmpty()) {
+                        organizer.addEvent(
+                                Integer.parseInt(data[3]));
+                    }
+
+                } catch (NumberFormatException e) {
+                    throw new IllegalArgumentException(
+                            "Invalid organizer or event ID in "
+                                    + filename, e);
+                }
+            }
+
+            System.out.println("Organizers loaded successfully.");
+
+        } catch (java.io.IOException e) {
+            throw new IllegalStateException(
+                    "Error loading organizers: " + filename, e);
+        }
+
+        return new java.util.ArrayList<>(organizers.values());
+    }
+
 }
