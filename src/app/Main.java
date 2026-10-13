@@ -14,6 +14,7 @@ import model.Registration;
 import service.StudentManager;
 import service.EventSystem;
 import service.RegistrationSystem;
+import service.ReportSystem;
 import persistence.FileManager;
 
 import java.nio.file.Files;
@@ -639,7 +640,43 @@ public class Main {
 
                 // 11. System Reports
                 case 11: {
-                    System.out.println("WIP - System Reports selected\n");
+                    ReportSystem reports = new ReportSystem(
+                            eventSystem, registrationSystem);
+
+                    int reportChoice;
+
+                    do {
+                        System.out.println("\n=== System Reports ===");
+                        System.out.println("1. Events with Available Capacity");
+                        System.out.println("2. Full Events");
+                        System.out.println("3. Most Popular Events");
+                        System.out.println("4. Students Registered for Multiple Events");
+                        System.out.println("0. Return to Main Menu");
+
+                        reportChoice = readInt(input, "Select a report: ", 0, 4);
+
+                        switch (reportChoice) {
+                            case 1:
+                                reports.displayAvailableEvents();
+                                break;
+                            case 2:
+                                reports.displayFullEvents();
+                                break;
+                            case 3:
+                                reports.displayPopularEvents();
+                                break;
+                            case 4:
+                                reports.displayStudentsWithMultipleEvents();
+                                break;
+                            case 0:
+                                System.out.println("Returning to main menu.");
+                                break;
+                            default:
+                                System.out.println("Invalid report option.");
+                        }
+
+                    } while (reportChoice != 0);
+
                     break;
                 }
             }
