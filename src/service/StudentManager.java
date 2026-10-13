@@ -13,6 +13,13 @@ public class StudentManager {
 		students = new ArrayList<>();
 	}
 
+
+    // Return a copy of the students list for saving
+    public ArrayList<Student> getAllStudents() {
+        return new ArrayList<>(students);
+    }
+
+
 	/**
 	 * Adds a student if their ID is not already in the list.
 	 * Returns true if added, or false for a null student or duplicate ID.

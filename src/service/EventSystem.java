@@ -11,6 +11,12 @@ public class EventSystem {
         events = new ArrayList<>();
     }
 
+    // Return a copy of the events list for saving
+    public ArrayList<Event> getAllEvents() {
+        return new ArrayList<>(events);
+    }
+
+
     // Add an event
     public boolean addEvent(Event event) {
         if (event != null) {

@@ -1,0 +1,11 @@
+
+# Compiled Java files
+*.class
+
+# Generated test data
+/students.txt
+/events.txt
+/registrations.txt
+
+# macOS files
+.DS_Store

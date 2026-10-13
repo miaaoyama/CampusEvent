@@ -35,6 +35,32 @@ public class Registration {
 		this.registrationStatus = REGISTERED;								// Sets the student's current registration status. "Registered" by default
 	}
 
+    // Constructor for loading a saved registration
+    public Registration(Student student, Event event, LocalDateTime registrationDate, String registrationStatus) {
+
+        // Check that the student and event exist
+        if (student == null || event == null) {
+            throw new IllegalArgumentException("Student and event cannot be null.");
+        }
+
+        // Check that the saved date exists
+        if (registrationDate == null) {
+            throw new IllegalArgumentException("Registration date cannot be null.");
+        }
+
+        // Check that the saved status is valid
+        if (!REGISTERED.equals(registrationStatus) && !CANCELLED.equals(registrationStatus)) {
+            throw new IllegalArgumentException("Invalid registration status.");
+        }
+
+        // Restore the original information
+        this.student = student;
+        this.event = event;
+        this.registrationDate = registrationDate;
+        this.registrationStatus = registrationStatus;
+    }
+
+
 	// Methods:
 
 	// Getters
@@ -67,7 +93,6 @@ public class Registration {
 	// Method: prints relevant Registration info
 	@Override
 	public String toString() {
-		return "Student: " + student.getName() + ", Event: " + event.getName()
-				+ ", Registration date: " + registrationDate + ", Status: " + registrationStatus;
+		return "Student: " + student.getName() + ", Event: " + event.getName() + ", Registration date: " + registrationDate + ", Status: " + registrationStatus;
 	}
 }	// end class

@@ -1,6 +1,6 @@
 package service;
 
-/* RegistrationSystem Class: 
+/* RegistrationSystem Class:
 Work in progress; Ideas welcome */
 
 import java.util.ArrayList;
@@ -17,6 +17,26 @@ public class RegistrationSystem {
 	public RegistrationSystem() {
 		registrations = new ArrayList<>();
 	}
+
+
+
+    // Add an existing registration loaded from a file
+    public void restoreRegistration(Registration registration) {
+        if (registration == null) {
+            throw new IllegalArgumentException("Registration cannot be null.");
+        }
+
+        registrations.add(registration);
+    }
+
+
+
+    // Return a copy of the registrations list for saving
+    public ArrayList<Registration> getAllRegistrations() {
+        return new ArrayList<>(registrations);
+    }
+
+
 
 	// Method - Add Registration
 	// Takes a student and event object as parameters, and performs several checks
@@ -66,8 +86,8 @@ public class RegistrationSystem {
     	return true;
 	}
 
-	// Method - Get Registration Count 
-	// Currently: returns the number of registration objects in the array. 
+	// Method - Get Registration Count
+	// Currently: returns the number of registration objects in the array.
 	// Note: not necessarily the total number of students or events.
 	public int getRegistrationCount() {
 		return registrations.size();
@@ -82,7 +102,7 @@ public class RegistrationSystem {
 		}
 		return registrations.remove(registration);
 	}
-	
+
 	// Method - View Registrations For Student
 	public void viewStudentRegistrations(Student student) {
     	// Exception check for if the student exists
