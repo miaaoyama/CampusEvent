@@ -16,9 +16,9 @@ This project implements an event management system for college students. It serv
 - Francisco  
 - Jason  
 
-The following is a generalized list of responsibilities for each student. It was very common for us to error check each other's code, resolve any outstanding issues, implement helper functions for each other, etc. 
+The following is a generalized list of contributions from each student. It was very common for us to error check each other's code, resolve any outstanding issues, implement helper functions for each other, etc. 
 
-| Name | Primary Responsibilities |
+| Name | Primary Contributions |
 |---|---| 
 | Marina | Overall project management, Event System, Organizer System, and Report System designer, main implementation |
 | Audrey | Co-Registration System designer, main menu designer, main implementation, documentation |
@@ -82,8 +82,9 @@ The program is run through a console menu user-interface; the following are opti
 | 7 | Cancel Registration | Cancels a student registration with a particular event. |
 | 8 | View Student Registrations | Displays all events a student is registered for. |
 | 9 | View Event Attendees | Displays all students attending the selected event. |
-| 10 | View Organizers | Displays list of organizers managing events. |
-| 11 | System Reports | Displays other miscellaneous event info that may be interesting. |
+| 10 | Add Organizer | Adds a new organizer to the program, including their ID, event ID, etc. |
+| 11 | View Organizers | Displays list of organizers managing events. |
+| 12 | System Reports | Displays other miscellaneous event info that may be interesting. |
 | 0 | Exit | Terminates the program. |
 
 More to be added later~

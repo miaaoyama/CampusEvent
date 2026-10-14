@@ -9,6 +9,7 @@ import model.Event;
 import model.AcademicEvent;
 import model.CareerEvent;
 import model.ClubEvent;
+import model.Organizer;
 import model.SocialEvent;
 import model.Registration;
 import service.StudentManager;
@@ -125,11 +126,11 @@ public class Main {
             // Print menu
             System.out.print("1. Add Student\n" + "2. View Students\n" + "3. Create Event\n" + "4. View Events\n"
                             + "5. Search Events\n" + "6. Register Student for Event\n" + "7. Cancel Registration\n"
-                            + "8. View Student Registrations\n" + "9. View Event Attendees\n"
-                            + "10. View Organizers\n" + "11. System Reports\n" + "0. Exit\n\n");
+                            + "8. View Student Registrations\n" + "9. View Event Attendees\n" + "10. Add Organizer\n"
+                            + "11. View Organizers\n" + "12. System Reports\n" + "0. Exit\n\n");
 
             // User input check (using helper function readInt() at the bottom of main)
-            menuSelect = readInt(input, "Enter selection: ", 0, 11);
+            menuSelect = readInt(input, "Enter selection: ", 0, 12);
 
             // Perform the action designated by the user's selection
             switch (menuSelect) {
@@ -137,7 +138,7 @@ public class Main {
                 case 1: {
                     System.out.println("Add Student selected.\n");
 
-                    // User input check (using helper function readInt() at the bottom of main)
+                    // User input student ID
                     int studentIdBeingAdded = readInt(input, "Enter student ID: ", 1000, 9999);
                     
                     // Check if the entered ID is a duplicate
@@ -187,7 +188,7 @@ public class Main {
                 case 3: {
                     System.out.println("Create Event selected.\n");
 
-                    // User input check (using helper function readInt() at the bottom of main)
+                    // User input event ID
                     int eventIdBeingAdded = readInt(input, "Enter event ID: ", 1000, 9999);
                     
                     // Check if the entered ID is a duplicate
@@ -492,16 +493,96 @@ public class Main {
                     break;
                 }
 
-                // 10. View Organizers
+                // 10. Add Organizer
                 case 10: {
+                    System.out.println("Add Organizer selected.\n");
+
+                    // User input organizer ID
+                    int organizerIdBeingAdded = readInt(input, "Enter organizer ID: ", 1000, 9999);
+                    
+                    // Check if the entered ID is a duplicate
+                    if (organizerManager.findOrganizerById(organizerIdBeingAdded) != null) {
+                        System.out.println("That organizer ID is already in use.\n");
+                        break;   // If so, inform user and immediately return to menu
+                    }
+
+                    // Prompt user to enter name
+                    System.out.print("Enter the organizer's name: ");
+                    String organizerNameBeingAdded = input.nextLine();
+
+                    // Prompt user to enter email
+                    System.out.print("Enter the organizer's email: ");
+                    String organizerEmailBeingAdded = input.nextLine();
+
+                    // Create the organizer with an empty list of event IDs
+                    Organizer organizerBeingAdded = new Organizer(organizerIdBeingAdded,
+                                                                  organizerNameBeingAdded,
+                                                                  organizerEmailBeingAdded);
+
+                    System.out.println();   // Print newline for spacing
+
+                    boolean addAnotherEvent = true;
+
+                    // Enter a loop to assign event(s) to the organizer
+                    while (addAnotherEvent) {
+                        // User input event ID
+                        int organizerEventIdBeingAdded = readInt(input,"Enter the ID of the event being organized: ",1000, 9999);
+
+                        // Check if the event exists
+                        Event organizationEvent = eventSystem.findEventById(organizerEventIdBeingAdded);
+                        if (organizationEvent == null) {
+                            System.out.println("Event not found. Please try again.");
+                            continue;  // If not, inform user and loop
+                        }
+
+                        // Add the event to the organizer
+                        if (organizerBeingAdded.addEvent(organizerEventIdBeingAdded)) {
+                            System.out.println("Event assigned successfully.\n");
+                        }
+                        else {
+                            System.out.println("This organizer is already assigned to that event.\n");
+                        }
+
+                        // Ask whether or not the user wants to add another event
+                        while (true) {
+                            System.out.print("Add another event for this organizer? (y/n): ");
+                            String addOrganizerYNString = input.nextLine().trim();
+
+                            if (addOrganizerYNString.equalsIgnoreCase("y")) {
+                                System.out.println();   // Print newline for spacing
+                                break;  // If yes, exit this loop then continue adding another event
+                            }
+                            else if (addOrganizerYNString.equalsIgnoreCase("n")) {
+                                addAnotherEvent = false;
+                                break;  // If no, exit both loops
+                            }
+                            else {  // If the user didnt input a valid response, loop
+                                System.out.println("Invalid input. Please enter y or n.");
+                            }
+                        }
+                    }
+
+                    // Add the completed organizer to the organizer manager
+                    if (organizerManager.addOrganizer(organizerBeingAdded)) {
+                        System.out.println("Organizer added successfully.\n");
+                    }
+                    else {
+                        System.out.println("Failed to add organizer.\n");
+                    }
+
+                    break;
+                }
+
+                // 11. View Organizers
+                case 11: {
                     System.out.println("=== View Organizers ===");
                     organizerManager.displayAllOrganizers(eventSystem);
                     System.out.println();
                     break;
                 }
 
-                // 11. System Reports
-                case 11: {
+                // 12. System Reports
+                case 12: {
                     ReportSystem reports = new ReportSystem(
                             eventSystem, registrationSystem);
 
