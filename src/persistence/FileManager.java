@@ -1,9 +1,11 @@
 
 package persistence;
 
+import java.util.List;
+import java.util.ArrayList;
+
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
 import model.Student;
 
 import java.io.BufferedReader;
@@ -88,6 +90,72 @@ public class FileManager {
 
 
     // Saves a list of events to a text file
+
+    // Quote CSV fields containing commas, quotes, or line breaks.
+    private static String escapeCsv(String value) {
+        if (value == null) {
+            return "";
+        }
+
+        if (value.contains(",") || value.contains("\"")
+                || value.contains("\n") || value.contains("\r")) {
+            return "\"" + value.replace("\"", "\"\"") + "\"";
+        }
+
+        return value;
+    }
+
+    // Check whether a CSV record contains an unclosed quoted field.
+    private static boolean hasUnclosedCsvQuote(String record) {
+        boolean quoted = false;
+
+        for (int i = 0; i < record.length(); i++) {
+            if (record.charAt(i) == '"') {
+                if (quoted && i + 1 < record.length()
+                        && record.charAt(i + 1) == '"') {
+                    i++;
+                } else {
+                    quoted = !quoted;
+                }
+            }
+        }
+
+        return quoted;
+    }
+
+    // Parse a CSV record while respecting quoted fields.
+    private static String[] parseCsvLine(String line) {
+        List<String> fields = new ArrayList<>();
+        StringBuilder field = new StringBuilder();
+        boolean quoted = false;
+
+        for (int i = 0; i < line.length(); i++) {
+            char c = line.charAt(i);
+
+            if (c == '"') {
+                if (quoted && i + 1 < line.length()
+                        && line.charAt(i + 1) == '"') {
+                    field.append('"');
+                    i++;
+                } else {
+                    quoted = !quoted;
+                }
+            } else if (c == ',' && !quoted) {
+                fields.add(field.toString());
+                field.setLength(0);
+            } else {
+                field.append(c);
+            }
+        }
+
+        if (quoted) {
+            throw new IllegalArgumentException("Unclosed CSV quote");
+        }
+
+        fields.add(field.toString());
+        return fields.toArray(new String[0]);
+    }
+
     public void saveEvents(ArrayList<Event> events, String filename) {
 
         try (FileWriter writer = new FileWriter(filename)) {
@@ -122,13 +190,13 @@ public class FileManager {
                 // Write event information to the file
                 writer.write(eventType + ","
                         + event.getEventId() + ","
-                        + event.getName() + ","
-                        + event.getDescription() + ","
+                        + escapeCsv(event.getName()) + ","
+                        + escapeCsv(event.getDescription()) + ","
                         + event.getDate() + ","
                         + event.getTime() + ","
-                        + event.getLocation() + ","
+                        + escapeCsv(event.getLocation()) + ","
                         + event.getCapacity() + ","
-                        + extraInfo + "\n");
+                        + escapeCsv(extraInfo) + "\n");
             }
 
             System.out.println("Events saved successfully.");
@@ -149,11 +217,25 @@ public class FileManager {
 
             String line;
 
-            // Read one event at a time
+            // Read one CSV record at a time, including quoted line breaks.
             while ((line = reader.readLine()) != null) {
 
+                StringBuilder record = new StringBuilder(line);
+
+                while (hasUnclosedCsvQuote(record.toString())) {
+                    String nextLine = reader.readLine();
+
+                    if (nextLine == null) {
+                        throw new IllegalArgumentException(
+                            "Unclosed CSV quote in " + filename
+                        );
+                    }
+
+                    record.append("\n").append(nextLine);
+                }
+
                 // Separate the event information
-                String[] data = line.split(",", -1);
+                String[] data = parseCsvLine(record.toString());
 
                 // Each event should have 9 fields
                 if (data.length != 9) {
