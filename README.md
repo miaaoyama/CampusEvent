@@ -20,12 +20,12 @@ The following is a generalized list of responsibilities for each student. It was
 
 | Name | Primary Responsibilities |
 |---|---| 
-| Marina | Overall project management and Event System designer |
-| Audrey | Co-Registration System designer, main implementation |
-| Swan | Student management designer |
-| Kyle | Organizer System designer |
-| Francisco | Persistence designer, main implementation |
-| Jason | Co-Registration System designer, main implementation |
+| Marina | Overall project management, Event System, Organizer System, and Report System designer, main implementation |
+| Audrey | Co-Registration System designer, main menu designer, main implementation, documentation |
+| Swan | Student management system designer |
+| Kyle |  |
+| Francisco | Persistence designer, File Management System designer, main implementation |
+| Jason | Co-Registration System designer, main implementation, documentation |
 
 ## Features:  
 
@@ -77,13 +77,13 @@ The program is run through a console menu user-interface; the following are opti
 | 2 | View Students | Displays all students currently entered or saved into the program. |
 | 3 | Create Event | Adds a new event with a unique 4-digit ID, name, description, date, etc.  |
 | 4 | View Events | Displays all events entered or saved in the program. |
-| 5 | Search Events | Searches for an event by its unique ID. |
+| 5 | Search Events | Searches for an event by its event type. |
 | 6 | Register Student for Event | Signs a student up for a chosen event. |
 | 7 | Cancel Registration | Cancels a student registration with a particular event. |
 | 8 | View Student Registrations | Displays all events a student is registered for. |
 | 9 | View Event Attendees | Displays all students attending the selected event. |
-| 10 | View Organizers | Displays list of organizers that can manage events. |
+| 10 | View Organizers | Displays list of organizers managing events. |
 | 11 | System Reports | Displays other miscellaneous event info that may be interesting. |
-| 12 | Exit | Terminates the program. |
+| 0 | Exit | Terminates the program. |
 
 More to be added later~
