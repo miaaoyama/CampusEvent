@@ -127,7 +127,8 @@ public class Main {
             System.out.print("1. Add Student\n" + "2. View Students\n" + "3. Create Event\n" + "4. View Events\n"
                             + "5. Search Events\n" + "6. Register Student for Event\n" + "7. Cancel Registration\n"
                             + "8. View Student Registrations\n" + "9. View Event Attendees\n" + "10. Add Organizer\n"
-                            + "11. View Organizers\n" + "12. System Reports\n" + "0. Exit\n\n");
+                            + "11. View Organizers\n" + "12. System Reports\n" + "13. Find organizer\n" + "14. Search Associatons\n" 
+                            + "0. Exit\n\n");
 
             // User input check (using helper function readInt() at the bottom of main)
             menuSelect = readInt(input, "Enter selection: ", 0, 12);
