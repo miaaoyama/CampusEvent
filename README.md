@@ -91,7 +91,7 @@ The program is run through a console menu user-interface; the following are opti
 | 8 | View Student Registrations | Displays all events a student is currently registered for. |
 | 9 | View Event Attendees | Displays all students attending the selected event. |
 | 10 | View Organizers | Displays list of organizers managing events. |
-| 11 | System Reports | Displays other miscellaneous event info that may be interesting. |
+| 11 | System Reports | Displays other miscellaneous event info that may be of interest. |
 | 0 | Exit | Terminates the program. |  
 
 ## Notable Design Decisions and Feedback
