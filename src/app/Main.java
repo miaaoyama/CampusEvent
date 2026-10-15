@@ -9,11 +9,18 @@ import model.Event;
 import model.AcademicEvent;
 import model.CareerEvent;
 import model.ClubEvent;
+import model.Organizer;
 import model.SocialEvent;
 import model.Registration;
 import service.StudentManager;
 import service.EventSystem;
 import service.RegistrationSystem;
+import service.OrganizerManager;
+import service.ReportSystem;
+import persistence.FileManager;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 public class Main {
     public static void main(String[] args) {
@@ -23,21 +30,93 @@ public class Main {
         StudentManager studentManager = new StudentManager();
         EventSystem eventSystem = new EventSystem();
         RegistrationSystem registrationSystem = new RegistrationSystem();
+        OrganizerManager organizerManager = new OrganizerManager();
 
+        // Initialize file management object for saving and loading data
+        FileManager fileManager = new FileManager();
+
+        // Initialize an array of the four data file names, in the data folder
+        String[] dataFiles = {
+            "data/students.csv",
+            "data/events.csv",
+            "data/registrations.csv",
+            "data/organizers.csv"
+        };
+
+
+        // Begin a loop for each file, to check if each one exists
+        for (String filename : dataFiles) {
+            // Initialize a path representing the file location
+            Path path = Path.of(filename);
+
+            // If the file exists, but isnt a regular file or cant be read, exit the program immediately
+            if (Files.exists(path) && (!Files.isRegularFile(path) || !Files.isReadable(path))) {
+
+                System.out.println("Cannot safely read " + filename + ". Exiting without saving.");
+
+                input.close();  // Close the Scanner object
+                return; // Exit the program
+            }
+        }
+
+        // Try to load the saved data of each file
+        try {
+
+            // If students.csv does not exist, start with empty list
+            if (Files.notExists(Path.of("data/students.csv"))) {
+                System.out.println("No saved students found. Starting empty.");
+            } else {    // Else, file exists, so load the data from students.csv into the students array
+                for (Student student : fileManager.loadStudents("data/students.csv")) {
+                    studentManager.addStudent(student);
+                }
+            }
+
+            // If events.csv does not exist, start with empty list
+            if (Files.notExists(Path.of("data/events.csv"))) {
+                System.out.println("No saved events found. Starting empty.");
+            } else {    // Else, file exists, so load the data from events.csv into the events array
+                for (Event event : fileManager.loadEvents("data/events.csv")) {
+                    eventSystem.addEvent(event);
+                }
+            }
+
+            // If registrations.csv does not exist, start with empty list
+            if (Files.notExists(Path.of("data/registrations.csv"))) {
+                System.out.println("No saved registrations found. Starting empty.");
+            } else {    // Else, file exists, so load the data from registrations.csv into the registrations array
+                for (Registration registration : fileManager.loadRegistrations("data/registrations.csv", studentManager.getAllStudents(), eventSystem.getAllEvents())) {
+                    registrationSystem.restoreRegistration(registration);
+                }
+            }
+
+            // If organizers.csv does not exist, start with empty list
+            if (Files.notExists(Path.of("data/organizers.csv"))) {
+                System.out.println("No saved organizers found. Starting empty.");
+            } else {    // Else, file exists, so load the data from organizers.csv into the organizers array
+                for (model.Organizer organizer :
+                        fileManager.loadOrganizers("data/organizers.csv")) {
+                    if (!organizerManager.addOrganizer(organizer)) {    // If a duplicate organizer is found when loading, handle it
+                        throw new IllegalArgumentException(
+                                "Duplicate organizer ID: "
+                                + organizer.getOrganizerId());
+                    }
+                }
+            }
+          
+          System.out.println();   // Print newline for spacing
+
+        } catch (IllegalArgumentException | IllegalStateException e) {
+
+            System.out.println("Error loading saved data: " + e.getMessage());
+            System.out.println("Program stopped to prevent overwriting saved data.");
+
+            input.close();  // Close the Scanner object
+            return; // Exit the program
+        }
+
+
+        // Initialize an int to hold the user's menu selections
         int menuSelect = 1;
-
-        // **TEMPORARY TEST DATA**
-        Student testStudent1 = new Student(1001, "Test Student1", "test1@example.com", "Computer Science");
-        Student testStudent2 = new Student(1002, "Test Student2", "test2@example.com", "Computer Science");
-        Student testStudent3 = new Student(1003, "Test Student3", "test3@example.com", "Computer Science");
-        Event testEvent1 = new AcademicEvent(2001, "Test Workshop", "A test academic event", LocalDate.of(2026, 10, 10), LocalTime.of(10, 0), "Room 101", 2, "Academics");
-        Event testEvent2 = new ClubEvent(2002, "Test Hangout", "A test club event", LocalDate.of(2026, 11, 14), LocalTime.of(14, 30), "Room 201", 1, "Stuff");
-        studentManager.addStudent(testStudent1);
-        studentManager.addStudent(testStudent2);
-        studentManager.addStudent(testStudent3);
-        eventSystem.addEvent(testEvent1);
-        eventSystem.addEvent(testEvent2);
-        // **TEMPORARY TEST DATA**
 
         // Begin a loop to return to menu after each selection (until the selection is 0)
         do {
@@ -47,33 +126,11 @@ public class Main {
             // Print menu
             System.out.print("1. Add Student\n" + "2. View Students\n" + "3. Create Event\n" + "4. View Events\n"
                             + "5. Search Events\n" + "6. Register Student for Event\n" + "7. Cancel Registration\n"
-                            + "8. View Student Registrations\n" + "9. View Event Attendees\n"
-                            + "10. View Organizers\n" + "11. System Reports\n" + "0. Exit\n\n");
+                            + "8. View Student Registrations\n" + "9. View Event Attendees\n" + "10. Add Organizer\n"
+                            + "11. View Organizers\n" + "12. System Reports\n" + "0. Exit\n\n");
 
-            // Begin a while loop to get valid user input
-            while (true) {
-                System.out.print("Enter selection: ");
-
-                // If user does not input an int
-                if (!input.hasNextInt()) {
-                    System.out.println("Invalid input. Please enter an integer.");
-                    input.nextLine(); // Clear input
-                    continue;   // Skip to next loop iteration
-                }
-
-                // Else, assign menuSelect to input
-                menuSelect = input.nextInt();
-                input.nextLine();   // Clear input
-
-                // If the value of menuSelect is not a valid int
-                if (menuSelect < 0 || menuSelect > 11) {
-                    System.out.println("Invalid input. Please enter a number from 0 to 11.");
-                    continue; // Skip to next loop iteration
-                }
-
-                // Else, exit the menu selection while loop
-                break;
-            }
+            // User input check (using helper function readInt() at the bottom of main)
+            menuSelect = readInt(input, "Enter selection: ", 0, 12);
 
             // Perform the action designated by the user's selection
             switch (menuSelect) {
@@ -81,34 +138,13 @@ public class Main {
                 case 1: {
                     System.out.println("Add Student selected.\n");
 
-                    int studentIdBeingAdded = 0;
-                    // Begin a loop to get a valid student ID input from the user.
-                    while (true) {
-                        // Prompt user to enter a student ID
-                        System.out.print("Enter a 4-digit student ID: ");
-
-                        // If the user inputs a non-integer, handle it
-                        if (!input.hasNextInt()) {
-                            System.out.println("Invalid input. Please enter an integer.");
-                            input.nextLine();   // Clear input
-                            continue;   // Loop and prompt again
-                        }
-
-                        // Otherwise, assign the input
-                        studentIdBeingAdded = input.nextInt();
-                        input.nextLine();   // Clear input
-
-                        // If the input is not a digit anywhere from 1000 to 9999, continue loop
-                        if (studentIdBeingAdded < 1000 || studentIdBeingAdded > 9999) {
-                            System.out.println("Invalid input. ID must be a valid 4-digit number.");
-                            continue;   // Loop and prompt again
-                        }
-                        // Else, check if the entered ID is a duplicate
-                        if (studentManager.findStudentById(studentIdBeingAdded) != null) {
-                            System.out.println("That student ID is already in use.");
-                            continue;   // If so, loop and prompt again
-                        }
-                        break;  // Otherwise, successfully exit the student ID input loop
+                    // User input student ID
+                    int studentIdBeingAdded = readInt(input, "Enter student ID: ", 1000, 9999);
+                    
+                    // Check if the entered ID is a duplicate
+                    if (studentManager.findStudentById(studentIdBeingAdded) != null) {
+                        System.out.println("That student ID is already in use.\n");
+                        break;   // If so, inform user and immediately return to menu
                     }
 
                     // Prompt user to enter name
@@ -152,34 +188,13 @@ public class Main {
                 case 3: {
                     System.out.println("Create Event selected.\n");
 
-                    int eventIdBeingAdded = 0;
-                    // Begin a loop to get a valid event ID input from the user.
-                    while (true) {
-                        // Prompt user to enter an event ID
-                        System.out.print("Enter a 4-digit event ID: ");
-
-                        // If the user inputs a non-integer, handle it
-                        if (!input.hasNextInt()) {
-                            System.out.println("Invalid input. Please enter an integer.");
-                            input.nextLine();   // Clear input
-                            continue;   // Loop and prompt again
-                        }
-
-                        // Otherwise, assign the input
-                        eventIdBeingAdded = input.nextInt();
-                        input.nextLine();   // Clear input
-
-                        // If the input is not a digit anywhere from 1000 to 9999, handle it
-                        if (eventIdBeingAdded < 1000 || eventIdBeingAdded > 9999) {
-                            System.out.println("Invalid input. ID must be a valid 4-digit number.");
-                            continue;   // Loop and prompt again
-                        }
-                        // Else, check if the entered ID is a duplicate
-                        if (eventSystem.findEventById(eventIdBeingAdded) != null) {
-                            System.out.println("That event ID is already in use.");
-                            continue;   // If so, loop and prompt again
-                        }
-                        break;  // Otherwise, successfully exit the event ID input loop
+                    // User input event ID
+                    int eventIdBeingAdded = readInt(input, "Enter event ID: ", 1000, 9999);
+                    
+                    // Check if the entered ID is a duplicate
+                    if (eventSystem.findEventById(eventIdBeingAdded) != null) {
+                        System.out.println("That event ID is already in use.\n");
+                        break;   // If so, inform user and immediately return to menu
                     }
 
                     // Prompt user to enter name
@@ -226,58 +241,13 @@ public class Main {
                     System.out.print("Enter the event's location: ");
                     String eventLocationBeingAdded = input.nextLine();
 
-                    // Initialize capacity
-                    int eventCapacityBeingAdded = 0;
-                    while (true) {
-                        // Prompt user to enter capacity
-                        System.out.print("Enter the event's capacity: ");
-
-                        // If the user inputs a non-integer, handle it
-                        if (!input.hasNextInt()) {
-                            System.out.println("Invalid input. Please enter an integer.");
-                            input.nextLine();   // Clear input
-                            continue;   // Loop and prompt again
-                        }
-
-                        // Otherwise, assign the input
-                        eventCapacityBeingAdded = input.nextInt();
-                        input.nextLine();   // Clear input
-
-                        // If the user inputs a number less than 1, handle it
-                        if (eventCapacityBeingAdded < 1) {
-                            System.out.println("Invalid input. Event must have at least 1 capacity.");
-                            continue;   // Loop and prompt again
-                        }
-
-                        break;  // Else, exit while loop for capacity input
-                    }
+                    // User input check (using helper function readInt() at the bottom of main)
+                    int eventCapacityBeingAdded = readInt(input, "Enter event capacity: ", 1, 100);
 
                     System.out.println();   // Print newline for spacing
 
-                    int eventTypeBeingAdded = 0;
-                    // Begin a loop to get a valid event type from the user.
-                    while (true) {
-                        // Prompt user to enter an event type
-                        System.out.print("Enter an event type (1: Academic, 2: Career, 3: Club, or 4: Social): ");
-                        
-                        // If the user inputs a non-integer, handle it
-                        if (!input.hasNextInt()) {
-                            System.out.println("Invalid input. Please enter an integer.");
-                            input.nextLine();   // Clear input
-                            continue;   // Loop and prompt again
-                        }
-
-                        // Otherwise, assign the input
-                        eventTypeBeingAdded = input.nextInt();
-                        input.nextLine();   // Clear input
-
-                        // If the input does not match any of the given types, continue loop
-                        if (eventTypeBeingAdded < 1 || eventTypeBeingAdded > 4) {
-                            System.out.println("Invalid input. Please enter one of the specified types.");
-                            continue;   // Skip to next loop iteration
-                        }
-                        break;  // Else, exit the event type input loop
-                    }
+                    // User input check (using helper function readInt() at the bottom of main)
+                    int eventTypeBeingAdded = readInt(input, "Enter an event type (1: Academic, 2: Career, 3: Club, or 4: Social): ", 1, 4);
 
                     // Initialize the event object being added before entering the switch statement.
                     Event eventBeingAdded;
@@ -367,7 +337,45 @@ public class Main {
 
                 // 5. Search Events
                 case 5: {
-                    System.out.println("WIP - Search Events selected\n");
+
+                    System.out.println("\n=== Search Events ===");
+                    System.out.println("1. Academic Events");
+                    System.out.println("2. Club Events");
+                    System.out.println("3. Social Events");
+                    System.out.println("4. Career Events");
+                    System.out.println("0. Return to Main Menu");
+
+                    int searchChoice = readInt(
+                            input, "Select event type: ", 0, 4);
+
+                    if (searchChoice == 0) {
+                        break;
+                    }
+
+                    String[] types = {
+                        "academic", "club", "social", "career"
+                    };
+
+                    String selectedType = types[searchChoice - 1];
+
+                    java.util.ArrayList<model.Event> matches =
+                            eventSystem.searchEventsByType(selectedType);
+
+                    if (matches.isEmpty()) {
+                        System.out.println(
+                            "No " + selectedType + " events found."
+                        );
+                    } else {
+                        System.out.println(
+                            "\nMatching " + selectedType + " events:"
+                        );
+
+                        for (model.Event event : matches) {
+                            event.displayDetails();
+                            System.out.println("--------------------");
+                        }
+                    }
+
                     break;
                 }
 
@@ -375,70 +383,24 @@ public class Main {
                 case 6: {
                     System.out.println("Register Student for Event Selected.\n");
 
-                    int registerStudentId = 0;
-                    // Enter a loop to get a valid student ID from the user
-                    while (true) {
-                        // Prompt user to enter a student ID
-                        System.out.print("Enter student ID: ");
+                    // User input student ID
+                    int registerStudentId = readInt(input, "Enter student ID: ", 1000, 9999);
 
-                        // If the user inputs a non-integer, handle it
-                        if (!input.hasNextInt()) {
-                            System.out.println("Invalid input. Please enter an integer.");
-                            input.nextLine();   // Clear input
-                            continue;   // Loop and prompt again
-                        }
-
-                        // Otherwise, assign the input
-                        registerStudentId = input.nextInt();
-                        input.nextLine();   // Clear input
-
-                        // If the input is not a digit anywhere from 1000 to 9999, handle it
-                        if (registerStudentId < 1000 || registerStudentId > 9999) {
-                            System.out.println("Invalid input. ID must be a valid 4-digit number.");
-                            continue;   // Loop and prompt again
-                        }
-                        break;  // Else, successfully exit loop for student ID input
-                    }
-
-                    // Check if the entered student ID exists
+                    // Check if the student exists
                     Student registerStudent = studentManager.findStudentById(registerStudentId);
-                    // If not, inform user and immediately return to menu
                     if (registerStudent == null) {
                         System.out.println("Student not found.\n");
-                        break;
+                        break;  // If not, inform user and immediately return to menu
                     }
 
-                    int registerEventId = 0;
-                    // Enter a loop to get a valid event ID from the user
-                    while (true) {
-                        // Prompt user to enter event ID
-                        System.out.print("Enter event ID: ");
+                    // User input event ID
+                    int registerEventId = readInt(input, "Enter event ID: ", 1000, 9999);
 
-                        // If the user inputs a non-integer, handle it
-                        if (!input.hasNextInt()) {
-                            System.out.println("Invalid input. Please enter an integer.");
-                            input.nextLine();   // Clear input
-                            continue;   // Loop and prompt again
-                        }
-                    
-                        // Otherwise, assign the input
-                        registerEventId = input.nextInt();
-                        input.nextLine();   // Clear 
-                        
-                        // If the input is not a digit anywhere from 1000 to 9999, handle it
-                        if (registerEventId < 1000 || registerEventId > 9999) {
-                            System.out.println("Invalid input. ID must be a valid 4-digit number.");
-                            continue;   // Loop and prompt again
-                        }
-                        break;  // Else, successfully exit loop for event ID input
-                    }
-
-                    // Check if the entered event ID exists
+                    // Check if the event exists
                     Event registerEvent = eventSystem.findEventById(registerEventId);
-                    // If not, inform user and immediately return to menu
                     if (registerEvent == null) {
                         System.out.println("Event not found.\n");
-                        break;
+                        break;  // If not, inform user and immediately return to menu
                     }
 
                     // Else, the IDs are valid, so now call addRegistration.
@@ -456,9 +418,25 @@ public class Main {
                 case 7: {
                     System.out.println("Cancel Registration selected\n");
 
-                    // User input checks (using helper function readInt() at the bottom of main)
+                    // User input student ID
                     int studentId = readInt(input, "Enter 4-digit student ID: ", 1000, 9999);
+
+                    // Check if the student exists
+                    Student student = studentManager.findStudentById(studentId);
+                    if (student == null) {
+                        System.out.println("Student not found.\n");
+                        break;  // If not, inform user and immediately return to menu
+                    }
+
+                    // User input event ID
                     int eventId =   readInt(input, "Enter 4-digit event ID: ", 1000, 9999 );
+
+                    // Check if the event exists
+                    Event event = eventSystem.findEventById(eventId);
+                    if (event == null) {
+                        System.out.println("Event not found.\n");
+                        break;  // If not, inform user and immediately return to menu
+                    }
 
                     Registration cancelled = registrationSystem.cancelRegistration(studentId, eventId);
 
@@ -477,41 +455,17 @@ public class Main {
                 case 8: {
                     System.out.println("View Student Registrations selected.\n");
 
-                    // Initialize before entering loop
-                    int registrationStudentId = 0;
-                    // Enter a loop to get a valid student ID from the user
-                    while (true) {
-                        // Prompt user to enter student ID
-                        System.out.print("Enter student ID: ");
+                    // User input student ID
+                    int registrationStudentId = readInt(input, "Enter student ID: ", 1000, 9999);
 
-                        // If the user inputs a non-integer, handle it
-                        if (!input.hasNextInt()) {
-                            System.out.println("Invalid input. Please enter an integer.");
-                            input.nextLine();   // Clear input
-                            continue;   // Loop and prompt again
-                        }
-                    
-                        // Otherwise, assign the input
-                        registrationStudentId = input.nextInt();
-                        input.nextLine();   // Clear 
-                        
-                        // If the input is not a digit anywhere from 1000 to 9999, handle it
-                        if (registrationStudentId < 1000 || registrationStudentId > 9999) {
-                            System.out.println("Invalid input. ID must be a valid 4-digit number.");
-                            continue;   // Loop and prompt again
-                        }
-                        break;  // Else, successfully exit loop for student ID input
-                    }
-
-                    // Using the given ID, search for the student
+                    // Check if the student exists
                     Student registrationStudent = studentManager.findStudentById(registrationStudentId);
-                    // If the specified student doesn't exist, inform user and immediately return to menu
                     if (registrationStudent == null) {
                         System.out.println("Student not found.\n");
-                        break;
+                        break;  // If not, inform user and immediately return to menu
                     }
 
-                    // Else, call method to display all of the specified student's registered events
+                    // Else, display all of the student's registered events
                     registrationSystem.viewStudentRegistrations(registrationStudent);
 
                     System.out.println();   // Print newline for spacing
@@ -522,65 +476,216 @@ public class Main {
                 case 9: {
                     System.out.println("View Event Attendees selected.\n");
 
-                    // Initialize before entering loop
-                    int registrationEventId = 0;
-                    // Enter a loop to get a valid event ID from the user
-                    while (true) {
-                        // Prompt user to enter event ID
-                        System.out.print("Enter event ID: ");
+                    // User input event ID
+                    int registrationEventId = readInt(input, "Enter event ID: ", 1000, 9999);
 
-                        // If the user inputs a non-integer, handle it
-                        if (!input.hasNextInt()) {
-                            System.out.println("Invalid input. Please enter an integer.");
-                            input.nextLine();   // Clear input
-                            continue;   // Loop and prompt again
-                        }
-                    
-                        // Otherwise, assign the input
-                        registrationEventId = input.nextInt();
-                        input.nextLine();   // Clear 
-                        
-                        // If the input is not a digit anywhere from 1000 to 9999, handle it
-                        if (registrationEventId < 1000 || registrationEventId > 9999) {
-                            System.out.println("Invalid input. ID must be a valid 4-digit number.");
-                            continue;   // Loop and prompt again
-                        }
-                        break;  // Else, successfully exit loop for event ID input
-                    }
-
-                    // Using the given ID, search for the event
+                    // Check if the event exists
                     Event registrationEvent = eventSystem.findEventById(registrationEventId);
-                    // If the specified event doesn't exist, inform user and immediately return to menu
                     if (registrationEvent == null) {
                         System.out.println("Event not found.\n");
-                        break;
+                        break;  // If not, inform user and immediately return to menu
                     }
 
-                    // Else, call method to display all of the specified event's registered students
+                    // Else, display all of the event's registered students
                     registrationSystem.viewEventAttendees(registrationEvent);
                     
                     System.out.println();   // Print newline for spacing
                     break;
                 }
 
-                // 10. View Organizers
+                // 10. Add Organizer
                 case 10: {
-                    System.out.println("WIP - View Organizers selected\n");
+                    System.out.println("Add Organizer selected.\n");
+
+                    // User input organizer ID
+                    int organizerIdBeingAdded = readInt(input, "Enter organizer ID: ", 1000, 9999);
+                    
+                    // Check if the entered ID is a duplicate
+                    if (organizerManager.findOrganizerById(organizerIdBeingAdded) != null) {
+                        System.out.println("That organizer ID is already in use.\n");
+                        break;   // If so, inform user and immediately return to menu
+                    }
+
+                    // Prompt user to enter name
+                    System.out.print("Enter the organizer's name: ");
+                    String organizerNameBeingAdded = input.nextLine();
+
+                    // Prompt user to enter email
+                    System.out.print("Enter the organizer's email: ");
+                    String organizerEmailBeingAdded = input.nextLine();
+
+                    // Prompt user to enter assossiation
+                    System.out.print("Enter the organizer's assossiation: ");
+                    String organizerAssossiationBeingAdded = input.nextLine();
+
+                    // Create the organizer with an empty list of event IDs
+                    Organizer organizerBeingAdded = new Organizer(organizerIdBeingAdded,
+                                                                  organizerNameBeingAdded,
+                                                                  organizerEmailBeingAdded,
+                                                                  organizerAssossiationBeingAdded);
+
+                    System.out.println();   // Print newline for spacing
+
+                    boolean addAnotherEvent = true;
+
+                    // Enter a loop to assign event(s) to the organizer
+                    while (addAnotherEvent) {
+                        // User input event ID
+                        int organizerEventIdBeingAdded = readInt(input,"Enter the ID of the event being organized: ",1000, 9999);
+
+                        // Check if the event exists
+                        Event organizationEvent = eventSystem.findEventById(organizerEventIdBeingAdded);
+                        if (organizationEvent == null) {
+                            System.out.println("Event not found. Please try again.");
+                            continue;  // If not, inform user and loop
+                        }
+
+                        // Add the event to the organizer
+                        if (organizerBeingAdded.addEvent(organizerEventIdBeingAdded)) {
+                            System.out.println("Event assigned successfully.\n");
+                        }
+                        else {
+                            System.out.println("This organizer is already assigned to that event.\n");
+                        }
+
+                        // Ask whether or not the user wants to add another event
+                        while (true) {
+                            System.out.print("Add another event for this organizer? (y/n): ");
+                            String addOrganizerYNString = input.nextLine().trim();
+
+                            if (addOrganizerYNString.equalsIgnoreCase("y")) {
+                                System.out.println();   // Print newline for spacing
+                                break;  // If yes, exit this loop then continue adding another event
+                            }
+                            else if (addOrganizerYNString.equalsIgnoreCase("n")) {
+                                addAnotherEvent = false;
+                                break;  // If no, exit both loops
+                            }
+                            else {  // If the user didnt input a valid response, loop
+                                System.out.println("Invalid input. Please enter y or n.");
+                            }
+                        }
+                    }
+
+                    // Add the completed organizer to the organizer manager
+                    if (organizerManager.addOrganizer(organizerBeingAdded)) {
+                        System.out.println("Organizer added successfully.\n");
+                    }
+                    else {
+                        System.out.println("Failed to add organizer.\n");
+                    }
+
                     break;
                 }
 
-                // 11. System Reports
+                // 11. View Organizers
                 case 11: {
-                    System.out.println("WIP - System Reports selected\n");
+                    System.out.println("=== View Organizers ===");
+                    organizerManager.displayAllOrganizers(eventSystem);
+                    System.out.println();
                     break;
+                }
+
+                // 12. System Reports
+                case 12: {
+                    ReportSystem reports = new ReportSystem(
+                            eventSystem, registrationSystem);
+
+                    int reportChoice;
+
+                    do {
+                        System.out.println("\n=== System Reports ===");
+                        System.out.println("1. Events with Available Capacity");
+                        System.out.println("2. Full Events");
+                        System.out.println("3. Most Popular Events");
+                        System.out.println("4. Students Registered for Multiple Events");
+                        System.out.println("0. Return to Main Menu");
+
+                        reportChoice = readInt(input, "Select a report: ", 0, 4);
+
+                        switch (reportChoice) {
+                            case 1:
+                                reports.displayAvailableEvents();
+                                break;
+                            case 2:
+                                reports.displayFullEvents();
+                                break;
+                            case 3:
+                                reports.displayPopularEvents();
+                                break;
+                            case 4:
+                                reports.displayStudentsWithMultipleEvents();
+                                break;
+                            case 0:
+                                System.out.println("Returning to main menu.\n");
+                                break;
+                            default:
+                                System.out.println("Invalid report option.");
+                        }
+
+                    } while (reportChoice != 0);
+
+
+                    break;
+                }
+
+                case 13: {
+                    System.out.println("Find organizer by their ID.\n");
+
+                    // User input organizer ID
+                    int OragnizerId = readInt(input, "Enter organizer ID: ", 1000, 9999);
+
+                    // Check if the organizer exists
+                    Organizer OrganizerFound = OrganizerManager.findOrganizerById(OrganizerId);
+                    if (registrationStudent == null) 
+                    {
+                        System.out.println("Student not found.\n");
+                        break;  // If not, inform user and immediately return to menu
+                    }
+
+                    // Else, display the organizer
+                    System.out.println(OrganizerFound);
+
+                    System.out.println();   // Print newline for spacing
+                    break;
+                }
+
+                case 14: {
+                    System.out.println("Find organizers by their department or organization.\n");
+
+                    //prompt for Association name
+                    System.out.print("Enter the department or organization's name: ");
+                    String SeekAssociation = input.nextLine();
+
+                    findOrganizersByAssociation find = new findOrganizersByAssociation();
+
+                    String[] result = OrganizerManager.findOrganizersByAssociation();
+
+                    for (String names : result) 
+                    {
+                        System.out.println(name);
+                    }
                 }
             }
 
+        // When the user enters 0, the menu loop is exited.
         } while (menuSelect != 0);
+
+        System.out.println();   // Print newline for spacing
+
+        // Save the contents of the students, events, registrations and organizers
+        // arrays in their respective files before exiting the program.
+        fileManager.saveStudents(studentManager.getAllStudents(), "data/students.csv");
+
+        fileManager.saveEvents(eventSystem.getAllEvents(), "data/events.csv");
+
+        fileManager.saveRegistrations(registrationSystem.getAllRegistrations(),"data/registrations.csv");
+
+        fileManager.saveOrganizers(organizerManager.getAllOrganizers(), "data/organizers.csv");
 
         System.out.println("Exiting program.");
 
-        input.close();
+        input.close();  // Close the Scanner object
     }
 
 
@@ -590,29 +695,23 @@ public class Main {
     private static int readInt(
         Scanner input, String prompt, int min, int max) {
 
-    while (true) {
-        System.out.print(prompt);
+        while (true) {
+            System.out.print(prompt);
 
-        if (!input.hasNextInt()) {
-            System.out.println("Please enter a valid integer value.");
-            input.next(); 
-            continue;
+            if (!input.hasNextInt()) {
+                System.out.println("Please enter a valid integer value.");
+                input.next(); 
+                continue;
+            }
+
+            int value = input.nextInt();
+
+            if (value >= min && value <= max) {
+                input.nextLine(); 
+                return value;
+            }
+
+            System.out.println("Enter a number from " + min + " to " + max + ".");
         }
-
-        int value = input.nextInt();
-
-        if (value >= min && value <= max) {
-            input.nextLine(); 
-            return value;
-        }
-
-        System.out.println("Enter a number from " + min + " to " + max + ".");
     }
 }
-
-
-} 
-
-
-
-
