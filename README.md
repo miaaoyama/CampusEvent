@@ -16,9 +16,9 @@ This project implements an event management system for college students. It serv
 - Francisco  
 - Jason  
 
-The following is a generalized list of responsibilities for each student. It was very common for us to error check each other's code, resolve any outstanding issues, implement helper functions for each other, etc. 
+The following is a generalized list of contributions from each student. It was very common for us to error check each other's code, resolve any outstanding issues, implement helper functions for each other, etc. 
 
-| Name | Primary Responsibilities |
+| Name | Primary Contributions |
 |---|---| 
 | Marina | Overall project management, Event System, Organizer System, and Report System designer, main implementation |
 | Audrey | Co-Registration System designer, main menu designer, main implementation, documentation |
