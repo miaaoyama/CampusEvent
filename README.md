@@ -25,7 +25,7 @@ The following is a generalized list of contributions from each student. It was v
 | Swan | Student management system designer |
 | Francisco | Persistence designer, File Management System designer, main implementation |
 | Jason | Co-Registration System designer, main implementation, documentation |
-| Kyle | Organizer System, main implementation, documentation |
+| Kyle | Organizer System designer, main implementation, documentation |
 
 ## Features  
 
