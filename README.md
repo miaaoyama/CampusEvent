@@ -20,7 +20,7 @@ The following is a generalized list of contributions from each student. It was v
 
 | Name | Primary Contributions |
 |---|---| 
-| Marina | Overall project management, Event System, and Report System designer, main implementation |
+| Marina | Overall project management, Event System and Report System designer, main implementation |
 | Audrey | Co-Registration System designer, main menu designer, main implementation, documentation |
 | Swan | Student management system designer |
 | Francisco | Persistence designer, File Management System designer, main implementation |
@@ -91,8 +91,11 @@ The program is run through a console menu user-interface; the following are opti
 | 7 | Cancel Registration | Cancels a student registration with a particular event. |
 | 8 | View Student Registrations | Displays all events a student is currently registered for. |
 | 9 | View Event Attendees | Displays all students attending the selected event. |
-| 10 | View Organizers | Displays list of organizers managing events. |
-| 11 | System Reports | Displays other miscellaneous event info that may be of interest. |
+| 10 | Add Organizer | Adds a new organizer to the program, including their ID, event ID, etc. |
+| 11 | View Organizers | Displays list of organizers managing events. |
+| 12 | System Reports | Displays other miscellaneous event info that may be of interest. |
+| 13 | Search Organizer by ID | Searches for an organizer by a given ID. |
+| 14 | Search Organizer by Association | Searches for an organizer by a given association name. |
 | 0 | Exit | Terminates the program. |  
 
 ## Notable Design Decisions and Feedback
@@ -109,6 +112,6 @@ A few things to think about for next time:
 
 ## Known Limitations  
 
-As of the last update (10/13/2026), the program appears to be fully functional. No known issues currently.  
+As of the last update (10/14/2026), the program appears to be fully functional. No known issues currently.  
 
 Thanks for reading!

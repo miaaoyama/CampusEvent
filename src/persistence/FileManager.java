@@ -426,12 +426,14 @@ public class FileManager {
                 if (eventIds.isEmpty()) {
                     writer.write(organizer.getOrganizerId() + ","
                             + organizer.getName() + ","
-                            + organizer.getEmail() + ",\n");
+                            + organizer.getEmail() + ","
+                            + organizer.getAssociation() + ",\n");
                 } else {
                     for (int eventId : eventIds) {
                         writer.write(organizer.getOrganizerId() + ","
                                 + organizer.getName() + ","
                                 + organizer.getEmail() + ","
+                                + organizer.getAssociation() + ","
                                 + eventId + "\n");
                     }
                 }
@@ -465,7 +467,7 @@ public class FileManager {
 
                 String[] data = line.split(",", -1);
 
-                if (data.length != 4) {
+                if (data.length != 5) {
                     throw new IllegalArgumentException(
                             "Invalid organizer record in " + filename);
                 }
@@ -474,24 +476,26 @@ public class FileManager {
                     int organizerId = Integer.parseInt(data[0]);
                     String name = data[1];
                     String email = data[2];
+                    String association = data[3];
 
                     model.Organizer organizer =
                             organizers.get(organizerId);
 
                     if (organizer == null) {
                         organizer = new model.Organizer(
-                                organizerId, name, email);
+                                organizerId, name, email, association);
                         organizers.put(organizerId, organizer);
                     } else if (!organizer.getName().equals(name)
-                            || !organizer.getEmail().equals(email)) {
+                            || !organizer.getEmail().equals(email)
+                            || !organizer.getAssociation().equals(association)) {
                         throw new IllegalArgumentException(
                                 "Conflicting organizer details for ID "
                                         + organizerId);
                     }
 
-                    if (!data[3].isEmpty()) {
+                    if (!data[4].isEmpty()) {
                         organizer.addEvent(
-                                Integer.parseInt(data[3]));
+                                Integer.parseInt(data[4]));
                     }
 
                 } catch (NumberFormatException e) {

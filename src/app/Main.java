@@ -1,6 +1,7 @@
 package app;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.Scanner;
 import java.time.format.DateTimeParseException;
 
@@ -127,10 +128,11 @@ public class Main {
             System.out.print("1. Add Student\n" + "2. View Students\n" + "3. Create Event\n" + "4. View Events\n"
                             + "5. Search Events\n" + "6. Register Student for Event\n" + "7. Cancel Registration\n"
                             + "8. View Student Registrations\n" + "9. View Event Attendees\n" + "10. Add Organizer\n"
-                            + "11. View Organizers\n" + "12. System Reports\n" + "0. Exit\n\n");
+                            + "11. View Organizers\n" + "12. System Reports\n" + "13. Search Organizer by ID\n"
+                            + "14. Search Organizer by Associaton\n" + "0. Exit\n\n");
 
             // User input check (using helper function readInt() at the bottom of main)
-            menuSelect = readInt(input, "Enter selection: ", 0, 12);
+            menuSelect = readInt(input, "Enter selection: ", 0, 14);
 
             // Perform the action designated by the user's selection
             switch (menuSelect) {
@@ -348,6 +350,8 @@ public class Main {
                     int searchChoice = readInt(
                             input, "Select event type: ", 0, 4);
 
+                    System.out.println();   // Print newline for spacing
+
                     if (searchChoice == 0) {
                         break;
                     }
@@ -367,7 +371,7 @@ public class Main {
                         );
                     } else {
                         System.out.println(
-                            "\nMatching " + selectedType + " events:"
+                            "Matching " + selectedType + " events:\n"
                         );
 
                         for (model.Event event : matches) {
@@ -376,6 +380,7 @@ public class Main {
                         }
                     }
 
+                    System.out.println();   // Print newline for spacing
                     break;
                 }
 
@@ -514,10 +519,15 @@ public class Main {
                     System.out.print("Enter the organizer's email: ");
                     String organizerEmailBeingAdded = input.nextLine();
 
+                    // Prompt user to enter association
+                    System.out.print("Enter the organizer's association: ");
+                    String organizerAssociationBeingAdded = input.nextLine();
+
                     // Create the organizer with an empty list of event IDs
                     Organizer organizerBeingAdded = new Organizer(organizerIdBeingAdded,
                                                                   organizerNameBeingAdded,
-                                                                  organizerEmailBeingAdded);
+                                                                  organizerEmailBeingAdded,
+                                                                  organizerAssociationBeingAdded);
 
                     System.out.println();   // Print newline for spacing
 
@@ -575,9 +585,10 @@ public class Main {
 
                 // 11. View Organizers
                 case 11: {
-                    System.out.println("=== View Organizers ===");
+                    System.out.println("\n=== View Organizers ===\n");
+
                     organizerManager.displayAllOrganizers(eventSystem);
-                    System.out.println();
+                    System.out.println();   // Print newline for spacing
                     break;
                 }
 
@@ -620,6 +631,51 @@ public class Main {
 
                     } while (reportChoice != 0);
 
+                    break;
+                }
+
+                // 13. Search Organizer by ID
+                case 13: {
+                    System.out.println("Search Organizer by ID selected.\n");
+
+                    // User input organizer ID
+                    int organizerId = readInt(input, "Enter organizer ID: ", 1000, 9999);
+
+                    // Check if the organizer exists
+                    Organizer searchedOrganizer = organizerManager.findOrganizerById(organizerId);
+                    if (searchedOrganizer == null) {
+                        System.out.println("Organizer not found.\n");
+                        break;  // If not, inform user and immediately return to menu
+                    }
+
+                    System.out.println();   // Print newline for spacing
+
+                    // Print the organizer
+                    System.out.println(searchedOrganizer);
+
+                    System.out.println();   // Print newline for spacing
+                    break;
+                }
+
+                // 14. Search Organizer by Association
+                case 14: {
+                    System.out.println("Search Organizer by Association selected.\n");
+
+                    // Prompt user for association name
+                    System.out.print("Enter the name of the association: ");
+                    String association = input.nextLine().trim();
+
+                    // Validate the input
+                    if (association.isEmpty()) {
+                        System.out.println("Association cannot be empty.\n");
+                        break;  // If empty input, return to menu
+                    }
+
+                    // Create a list of organizers matching the searched association
+                    ArrayList<Organizer> matchingOrganizers = organizerManager.findOrganizersByAssociation(association);
+
+                    // Display the matching organizers, if there are any
+                    organizerManager.displayOrganizersByAssociation(matchingOrganizers);
                     break;
                 }
             }
