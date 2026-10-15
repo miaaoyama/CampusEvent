@@ -20,11 +20,12 @@ The following is a generalized list of contributions from each student. It was v
 
 | Name | Primary Contributions |
 |---|---| 
-| Marina | Overall project management, Event System, Organizer System, and Report System designer, main implementation |
+| Marina | Overall project management, Event System, and Report System designer, main implementation |
 | Audrey | Co-Registration System designer, main menu designer, main implementation, documentation |
 | Swan | Student management system designer |
 | Francisco | Persistence designer, File Management System designer, main implementation |
 | Jason | Co-Registration System designer, main implementation, documentation |
+| Kyle | Organizer System, main implementation, documentation |
 
 ## Features  
 
