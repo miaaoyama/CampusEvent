@@ -74,7 +74,30 @@ This specific project was built entirely in VS Code using that program's recomme
 
 ## Data Storage
 
-All data is saved and loaded during the program using comma-separated values (CSV) files.
+The persistence system keeps application data between runs using CSV files in the `data/` folder. `FileManager` handles reading and writing the files, while the management classes hold the objects during program execution.
+
+| File | Saved information |
+|---|---|
+| `students.csv` | Student ID, name, email, and major |
+| `events.csv` | Event type, ID, name, description, date, time, location, capacity, and subclass-specific information |
+| `registrations.csv` | Student ID, event ID, registration date, and registration status |
+| `organizers.csv` | Organizer ID, name, email, association, and assigned event ID; organizers with multiple events use multiple rows |
+
+### Saving and Loading
+
+When the program starts, it loads students and events before registrations. Each event record includes its type so `FileManager` can recreate the correct subclass, such as `AcademicEvent` or `CareerEvent`, along with its additional information.
+
+Registrations store student and event IDs rather than repeating the full student and event details. During loading, `FileManager` finds the matching objects in the loaded lists and uses those references to reconstruct each registration. This keeps registrations connected to the same student and event objects used by the management systems.
+
+A separate `Registration` constructor restores the saved date and status instead of treating the record as a new signup. `RegistrationSystem.restoreRegistration()` then adds the restored registration to the system. Organizer rows with the same organizer ID are grouped into one organizer with its event assignments.
+
+Choosing **0 (Exit)** saves the current lists back to the CSV files. Missing files allow the application to start with empty collections. Invalid or unreadable saved data stops startup before the normal save-on-exit path to help prevent overwriting existing data.
+
+### Development and Testing
+
+Developer D implemented the original student, event, and registration persistence, registration restoration, and integration with the management systems. The team later extended the persistence system with organizer storage and improved event CSV handling.
+
+Persistence tests checked saving and loading records, preserving registration dates and statuses, and restoring the loaded data into new management systems to simulate an application restart.
 
 ## Running  
 
